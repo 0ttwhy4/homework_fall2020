@@ -60,7 +60,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             self.mean_net.to(ptu.device)
             self.logstd = nn.Parameter(
                 torch.zeros(self.ac_dim, dtype=torch.float32, device=ptu.device)
-            )
+            ) # log standard deviation
             self.logstd.to(ptu.device)
             self.optimizer = optim.Adam(
                 itertools.chain([self.logstd], self.mean_net.parameters()),
@@ -75,13 +75,16 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     ##################################
 
     def get_action(self, obs: np.ndarray) -> np.ndarray:
-        if len(obs.shape) > 1:
+        if len(obs) > 1:
             observation = obs
         else:
-            observation = obs[None]
+            observation = obs[0]
 
+        observation = torch.tensor(observation, dtype=torch.float32).to(ptu.device)
+        action = self.forward(observation)
+        
+        return action
         # TODO return the action that the policy prescribes
-        raise NotImplementedError
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
@@ -93,7 +96,23 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor) -> Any:
-        raise NotImplementedError
+        action = None
+        
+        
+        if self.discrete:
+            # MLP gives the logits of actions, transform the logits into distribution and sample
+            logits = self.logits_na(observation)
+            ac_dist = F.softmax(logits, dim=-1)
+            action = torch.multinomial(ac_dist, num_samples=1)
+            
+        else:
+            # MLP gives the mean value of action, and logstd is also a learnable parameter, use the generated distribution to sample an action
+            
+            ac_mean = self.mean_net(observation)
+            ac_std = torch.exp(self.logstd)
+            action = torch.distributions.Normal(ac_mean, ac_std).sample()
+
+        return action
 
 
 #####################################################
@@ -109,7 +128,19 @@ class MLPPolicySL(MLPPolicy):
             adv_n=None, acs_labels_na=None, qvals=None
     ):
         # TODO: update the policy and return the loss
-        loss = TODO
+        
+        observations = torch.tensor(observations, dtype=torch.float32).to(ptu.device)
+        actions = torch.tensor(actions, dtype=torch.float32).to(ptu.device)
+        
+        self.optimizer.zero_grad()
+        
+        policy_actions = self.forward(observations)
+        
+        loss = self.loss(actions, policy_actions)
+        loss.requires_grad = True
+        loss.backward()
+        self.optimizer.step()
+        
         return {
             # You can add extra logging information here, but keep this line
             'Training Loss': ptu.to_numpy(loss),

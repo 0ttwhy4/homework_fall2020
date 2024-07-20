@@ -1,13 +1,47 @@
 import os
+import logging
 from tensorboardX import SummaryWriter
 import numpy as np
+
+class MyFormatter(logging.Formatter):
+
+    def __init__(self):
+        super().__init__()
+        self.formats = {
+            logging.DEBUG: logging.Formatter('%(message)s'),
+            logging.INFO: logging.Formatter('%(asctime)s - INFO - %(message)s'),
+            logging.WARNING: logging.Formatter('%(asctime)s - WARNING - %(message)s'),
+            logging.ERROR: logging.Formatter('%(asctime)s - ERROR - %(message)s'),
+            logging.CRITICAL: logging.Formatter('%(asctime)s - CRITICAL - %(message)s')
+        }
+
+    def format(self, record):
+        log_fmt = self.formats.get(record.levelno)
+        return log_fmt.format(record)
+    
+def get_txt_logger(log_dir):
+    logging.basicConfig(level=logging.DEBUG, filemode='w')
+    logger = logging.getLogger(__name__)
+    logger.removeHandler(logging.StreamHandler())
+    
+    handler = logging.FileHandler(log_dir)
+    handler.setLevel(logging.DEBUG)
+    formatter = MyFormatter()
+    
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.propagate = False
+    
+    return logger
 
 class Logger:
     def __init__(self, log_dir, n_logged_samples=10, summary_writer=None):
         self._log_dir = log_dir
-        print('########################')
-        print('logging outputs to ', log_dir)
-        print('########################')
+        txt_dir = os.path.join(log_dir, "log.log")
+        self.text_logger = get_txt_logger(txt_dir)
+        self.text_logger.debug('#'*80)
+        self.text_logger.debug('logging outputs to {}'.format(log_dir))
+        self.text_logger.debug('#'*80)
         self._n_logged_samples = n_logged_samples
         self._summ_writer = SummaryWriter(log_dir, flush_secs=1, max_queue=1)
 
@@ -56,6 +90,9 @@ class Logger:
     def log_figure(self, figure, name, step, phase):
         """figure: matplotlib.pyplot figure handle"""
         self._summ_writer.add_figure('{}_{}'.format(name, phase), figure, step)
+        
+    def plot_graph(array):
+        pass
 
     def log_graph(self, array, name, step, phase):
         """figure: matplotlib.pyplot figure handle"""
@@ -68,7 +105,3 @@ class Logger:
 
     def flush(self):
         self._summ_writer.flush()
-
-
-
-

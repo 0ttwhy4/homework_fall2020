@@ -4,6 +4,7 @@ import torch
 from torch import nn
 
 Activation = Union[str, nn.Module]
+device = None
 
 
 _str_to_activation = {
@@ -45,12 +46,23 @@ def build_mlp(
     if isinstance(output_activation, str):
         output_activation = _str_to_activation[output_activation]
 
-    # TODO: return a MLP. This should be an instance of nn.Module
-    # Note: nn.Sequential is an instance of nn.Module.
-    raise NotImplementedError
-
-
-device = None
+    layer = []
+    
+    layer_in = nn.Linear(input_size, size)
+    layer.append(layer_in)
+    layer.append(activation)
+    
+    for _ in range(n_layers):
+        layer.append(nn.Linear(size, size))
+        layer.append(activation)
+        
+    layer_out = nn.Linear(size, output_size)
+    layer.append(layer_out)
+    layer.append(output_activation)
+    
+    mlp_net = nn.Sequential(*layer)
+    
+    return mlp_net
 
 
 def init_gpu(use_gpu=True, gpu_id=0):

@@ -1,0 +1,116 @@
+################################################################################
+################################################################################
+2024-07-18 22:54:55,377 - INFO - Done restoring expert policy...
+2024-07-18 22:54:55,377 - INFO - 
+
+********** Iteration 1 ************
+2024-07-18 22:54:55,381 - INFO - Training agent using sampled data from replay buffer...
+2024-07-18 22:54:57,476 - INFO - Beginning logging procedure...
+2024-07-18 22:54:57,477 - INFO - Collecting data for eval...
+2024-07-18 22:54:58,767 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:54:58,768 - INFO - Eval_AverageReturn : 4756.93701171875
+2024-07-18 22:54:58,768 - INFO - Eval_StdReturn : 0.0
+2024-07-18 22:54:58,769 - INFO - Eval_MaxReturn : 4756.93701171875
+2024-07-18 22:54:58,769 - INFO - Eval_MinReturn : 4756.93701171875
+2024-07-18 22:54:58,769 - INFO - Eval_AverageEpLen : 1000.0
+2024-07-18 22:54:58,770 - INFO - Train_AverageReturn : 10344.517578125
+2024-07-18 22:54:58,770 - INFO - Train_StdReturn : 20.9814453125
+2024-07-18 22:54:58,770 - INFO - Train_MaxReturn : 10365.4990234375
+2024-07-18 22:54:58,770 - INFO - Train_MinReturn : 10323.5361328125
+2024-07-18 22:54:58,771 - INFO - Train_AverageEpLen : 1000.0
+2024-07-18 22:54:58,771 - INFO - Train_EnvstepsSoFar : 0
+2024-07-18 22:54:58,771 - INFO - TimeSinceStart : 3.390002727508545
+2024-07-18 22:54:58,771 - INFO - Training Loss : 2.263456106185913
+2024-07-18 22:54:58,772 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:54:58,772 - INFO - 
+
+********** Iteration 2 ************
+2024-07-18 22:54:58,772 - INFO - Collecting data to be used for training...
+2024-07-18 22:55:05,576 - INFO - Relabelling collected observations with labels from an expert policy...
+2024-07-18 22:55:05,597 - INFO - Training agent using sampled data from replay buffer...
+2024-07-18 22:55:08,090 - INFO - Beginning logging procedure...
+2024-07-18 22:55:08,090 - INFO - Collecting data for eval...
+2024-07-18 22:55:09,489 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:09,489 - INFO - Eval_AverageReturn : 4706.544921875
+2024-07-18 22:55:09,489 - INFO - Eval_StdReturn : 0.0
+2024-07-18 22:55:09,490 - INFO - Eval_MaxReturn : 4706.544921875
+2024-07-18 22:55:09,490 - INFO - Eval_MinReturn : 4706.544921875
+2024-07-18 22:55:09,491 - INFO - Eval_AverageEpLen : 1000.0
+2024-07-18 22:55:09,491 - INFO - Train_AverageReturn : 4726.8916015625
+2024-07-18 22:55:09,491 - INFO - Train_StdReturn : 72.05603790283203
+2024-07-18 22:55:09,491 - INFO - Train_MaxReturn : 4843.673828125
+2024-07-18 22:55:09,492 - INFO - Train_MinReturn : 4630.08984375
+2024-07-18 22:55:09,492 - INFO - Train_AverageEpLen : 1000.0
+2024-07-18 22:55:09,492 - INFO - Train_EnvstepsSoFar : 5000
+2024-07-18 22:55:09,492 - INFO - TimeSinceStart : 14.111637115478516
+2024-07-18 22:55:09,493 - INFO - Training Loss : 2.7186217308044434
+2024-07-18 22:55:09,493 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:09,493 - INFO - 
+
+********** Iteration 3 ************
+2024-07-18 22:55:09,493 - INFO - Collecting data to be used for training...
+2024-07-18 22:55:16,793 - INFO - Relabelling collected observations with labels from an expert policy...
+2024-07-18 22:55:16,817 - INFO - Training agent using sampled data from replay buffer...
+2024-07-18 22:55:19,363 - INFO - Beginning logging procedure...
+2024-07-18 22:55:19,363 - INFO - Collecting data for eval...
+2024-07-18 22:55:21,263 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:21,263 - INFO - Eval_AverageReturn : 4681.3759765625
+2024-07-18 22:55:21,264 - INFO - Eval_StdReturn : 0.0
+2024-07-18 22:55:21,264 - INFO - Eval_MaxReturn : 4681.3759765625
+2024-07-18 22:55:21,265 - INFO - Eval_MinReturn : 4681.3759765625
+2024-07-18 22:55:21,265 - INFO - Eval_AverageEpLen : 1000.0
+2024-07-18 22:55:21,266 - INFO - Train_AverageReturn : 4775.97412109375
+2024-07-18 22:55:21,266 - INFO - Train_StdReturn : 38.99637985229492
+2024-07-18 22:55:21,266 - INFO - Train_MaxReturn : 4849.001953125
+2024-07-18 22:55:21,266 - INFO - Train_MinReturn : 4741.6015625
+2024-07-18 22:55:21,267 - INFO - Train_AverageEpLen : 1000.0
+2024-07-18 22:55:21,267 - INFO - Train_EnvstepsSoFar : 10000
+2024-07-18 22:55:21,267 - INFO - TimeSinceStart : 25.88611340522766
+2024-07-18 22:55:21,268 - INFO - Training Loss : 2.8471591472625732
+2024-07-18 22:55:21,268 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:21,268 - INFO - 
+
+********** Iteration 4 ************
+2024-07-18 22:55:21,268 - INFO - Collecting data to be used for training...
+2024-07-18 22:55:30,125 - INFO - Relabelling collected observations with labels from an expert policy...
+2024-07-18 22:55:30,149 - INFO - Training agent using sampled data from replay buffer...
+2024-07-18 22:55:32,947 - INFO - Beginning logging procedure...
+2024-07-18 22:55:32,947 - INFO - Collecting data for eval...
+2024-07-18 22:55:34,419 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:34,419 - INFO - Eval_AverageReturn : 4781.455078125
+2024-07-18 22:55:34,420 - INFO - Eval_StdReturn : 0.0
+2024-07-18 22:55:34,420 - INFO - Eval_MaxReturn : 4781.455078125
+2024-07-18 22:55:34,420 - INFO - Eval_MinReturn : 4781.455078125
+2024-07-18 22:55:34,421 - INFO - Eval_AverageEpLen : 1000.0
+2024-07-18 22:55:34,421 - INFO - Train_AverageReturn : 4713.1328125
+2024-07-18 22:55:34,421 - INFO - Train_StdReturn : 55.2304801940918
+2024-07-18 22:55:34,421 - INFO - Train_MaxReturn : 4793.5693359375
+2024-07-18 22:55:34,422 - INFO - Train_MinReturn : 4648.234375
+2024-07-18 22:55:34,422 - INFO - Train_AverageEpLen : 1000.0
+2024-07-18 22:55:34,422 - INFO - Train_EnvstepsSoFar : 15000
+2024-07-18 22:55:34,423 - INFO - TimeSinceStart : 39.04159903526306
+2024-07-18 22:55:34,423 - INFO - Training Loss : 2.7189881801605225
+2024-07-18 22:55:34,423 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:34,423 - INFO - 
+
+********** Iteration 5 ************
+2024-07-18 22:55:34,423 - INFO - Collecting data to be used for training...
+2024-07-18 22:55:42,510 - INFO - Relabelling collected observations with labels from an expert policy...
+2024-07-18 22:55:42,540 - INFO - Training agent using sampled data from replay buffer...
+2024-07-18 22:55:45,616 - INFO - Beginning logging procedure...
+2024-07-18 22:55:45,616 - INFO - Collecting data for eval...
+2024-07-18 22:55:47,093 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125
+2024-07-18 22:55:47,093 - INFO - Eval_AverageReturn : 4731.8671875
+2024-07-18 22:55:47,094 - INFO - Eval_StdReturn : 0.0
+2024-07-18 22:55:47,094 - INFO - Eval_MaxReturn : 4731.8671875
+2024-07-18 22:55:47,095 - INFO - Eval_MinReturn : 4731.8671875
+2024-07-18 22:55:47,095 - INFO - Eval_AverageEpLen : 1000.0
+2024-07-18 22:55:47,095 - INFO - Train_AverageReturn : 4684.162109375
+2024-07-18 22:55:47,096 - INFO - Train_StdReturn : 30.31382179260254
+2024-07-18 22:55:47,096 - INFO - Train_MaxReturn : 4732.7158203125
+2024-07-18 22:55:47,096 - INFO - Train_MinReturn : 4639.318359375
+2024-07-18 22:55:47,096 - INFO - Train_AverageEpLen : 1000.0
+2024-07-18 22:55:47,096 - INFO - Train_EnvstepsSoFar : 20000
+2024-07-18 22:55:47,097 - INFO - TimeSinceStart : 51.71598434448242
+2024-07-18 22:55:47,097 - INFO - Training Loss : 2.8276801109313965
+2024-07-18 22:55:47,097 - INFO - Initial_DataCollection_AverageReturn : 10344.517578125

@@ -1,3 +1,5 @@
+#!/home/tanty04/anaconda3/envs/bin python
+
 import os
 import time
 
@@ -34,9 +36,9 @@ class BC_Trainer(object):
         ## LOAD EXPERT POLICY
         #######################
 
-        print('Loading expert policy from...', self.params['expert_policy_file'])
+        self.rl_trainer.logger.text_logger.info('Loading expert policy from...', self.params['expert_policy_file'])
         self.loaded_expert_policy = LoadedGaussianPolicy(self.params['expert_policy_file'])
-        print('Done restoring expert policy...')
+        self.rl_trainer.logger.text_logger.info('Done restoring expert policy...')
 
     def run_training_loop(self):
 
@@ -63,7 +65,7 @@ def main():
     parser.add_argument('--num_agent_train_steps_per_iter', type=int, default=1000)  # number of gradient steps for training policy (per iter in n_iter)
     parser.add_argument('--n_iter', '-n', type=int, default=1)
 
-    parser.add_argument('--batch_size', type=int, default=1000)  # training data collected (in the env) during each iteration
+    parser.add_argument('--batch_size', type=int, default=5000)  # training data collected (in the env) during each iteration
     parser.add_argument('--eval_batch_size', type=int,
                         default=1000)  # eval data collected (in the env) for logging metrics
     parser.add_argument('--train_batch_size', type=int,
@@ -99,7 +101,7 @@ def main():
         assert args.n_iter==1, ('Vanilla behavior cloning collects expert data just once (n_iter=1)')
 
     ## directory for logging
-    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data')
+    data_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../logs')
     if not (os.path.exists(data_path)):
         os.makedirs(data_path)
     logdir = logdir_prefix + args.exp_name + '_' + args.env_name + '_' + time.strftime("%d-%m-%Y_%H-%M-%S")

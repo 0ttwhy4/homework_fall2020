@@ -1,5 +1,7 @@
 import numpy as np
 import time
+import torch
+
 
 ############################################
 ############################################
@@ -7,11 +9,13 @@ import time
 def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('rgb_array')):
 
     # initialize env for the beginning of a new rollout
-    ob = TODO # HINT: should be the output of resetting the env
-
+    reset_return = env.reset() # HINT: should be the output of resetting the env 
+    # note that since gym==0.26.2, the return of env.reset includes observation value and info (dictionary type) 
+    ob = reset_return[0]
     # init vars
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
+    
     while True:
 
         # render image of the simulated env
@@ -27,21 +31,24 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
 
         # use the most recent ob to decide what to do
         obs.append(ob)
-        ac = TODO # HINT: query the policy's get_action function
-        ac = ac[0]
+        ac = policy.get_action(ob) # HINT: query the policy's get_action function
+        ac = ac.detach().cpu().numpy()
         acs.append(ac)
 
         # take that action and record results
-        ob, rew, done, _ = env.step(ac)
+        ob, rew, te, trun, info = env.step(ac)
+        # in the new gymnasium, the return value of step() is (observation, reward, terminal, truncation, info)
 
         # record result of taking that action
         steps += 1
         next_obs.append(ob)
         rewards.append(rew)
 
+        done = te and trun
+            
         # TODO end the rollout if the rollout ended
         # HINT: rollout can end due to done, or due to max_path_length
-        rollout_done = TODO # HINT: this is either 0 or 1
+        rollout_done = 1 if done or steps >= max_path_length else 0 # HINT: this is either 0 or 1
         terminals.append(rollout_done)
 
         if rollout_done:
@@ -60,9 +67,10 @@ def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, r
     timesteps_this_batch = 0
     paths = []
     while timesteps_this_batch < min_timesteps_per_batch:
-
-        TODO
-
+        path = sample_trajectory(env, policy, max_path_length)
+        paths.append(path)
+        timesteps_this_batch += len(path['reward'])
+        
     return paths, timesteps_this_batch
 
 def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False, render_mode=('rgb_array')):
@@ -74,7 +82,9 @@ def sample_n_trajectories(env, policy, ntraj, max_path_length, render=False, ren
     """
     paths = []
 
-    TODO
+    for _ in range(ntraj):
+        path = sample_trajectory(env, policy, max_path_length)
+        paths.append(path)
 
     return paths
 
