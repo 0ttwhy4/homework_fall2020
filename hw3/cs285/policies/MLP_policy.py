@@ -86,7 +86,15 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
     # query the policy with observation(s) to get selected action(s)
     def get_action(self, obs: np.ndarray) -> np.ndarray:
-        # TODO: get this from Piazza
+        if len(obs) > 1:
+            observation = obs
+        else:
+            observation = obs[0]
+
+        observation = torch.tensor(observation, dtype=torch.float32).to(ptu.device)
+        ac_dist = self.forward(observation)
+        action = ac_dist.sample()
+        
         return action
 
     # update/train this policy
@@ -99,8 +107,24 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor):
-        # TODO: get this from Piazza
-        return action_distribution
+        ac_dist = None
+        
+        if self.discrete:
+            logits = self.logits_na(observation)
+            ac_dist = torch.distributions.Categorical(logits=logits)
+
+        else:
+            # MLP gives the mean value of action, and logstd is also a learnable parameter, use the generated distribution to sample an action
+            ac_mean = self.mean_net(observation)
+            ac_std = torch.exp(self.logstd)
+            #if self.ac_dim > 1:
+            #    ac_std = torch.diag(ac_std)
+            #    ac_dist = torch.distributions.MultivariateNormal(ac_mean, ac_std)
+            #else:
+            #    ac_dist = torch.distributions.Normal(ac_mean, ac_std)
+            ac_dist = distributions.MultivariateNormal(ac_mean, torch.diag(ac_std))
+
+        return ac_dist
 
 
 #####################################################

@@ -109,6 +109,7 @@ def main():
 
     trainer = PG_Trainer(params)
     trainer.run_training_loop()
+    # trainer.rl_trainer.run_and_visualize(timesteps=1000, save_dir='/home/tanty04/GitRepo/homework_fall2020/hw2/visualize/pendulum.gif')
 
 
 if __name__ == "__main__":

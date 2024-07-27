@@ -2,8 +2,13 @@ from collections import OrderedDict
 import numpy as np
 import time
 import pickle
+import os
+import sys
+import time
 
 import gym
+from gym import wrappers
+import numpy as np
 import torch
 
 from cs285.infrastructure import pytorch_util as ptu
@@ -29,6 +34,7 @@ class RL_Trainer(object):
 
         # Set random seeds
         seed = self.params['seed']
+        self.seed = seed
         np.random.seed(seed)
         torch.manual_seed(seed)
         ptu.init_gpu(
@@ -41,19 +47,26 @@ class RL_Trainer(object):
         #############
 
         # Make the gym environment
-        self.env = gym.make(self.params['env_name'])
+        self.env = gym.make(self.params['env_name'], render_mode="rgb_array")
         # self.env.seed(seed)
 
+        # import plotting (locally if 'obstacles' env)
+        if not(self.params['env_name']=='obstacles-cs285-v0'):
+            import matplotlib
+            matplotlib.use('Agg')
         # Maximum length for episodes
         self.params['ep_len'] = self.params['ep_len'] or self.env.spec.max_episode_steps
+        global MAX_VIDEO_LEN
         MAX_VIDEO_LEN = self.params['ep_len']
 
         # Is this env continuous, or self.discrete?
         discrete = isinstance(self.env.action_space, gym.spaces.Discrete)
+        # Are the observations images?
+        img = len(self.env.observation_space.shape) > 2
         self.params['agent_params']['discrete'] = discrete
 
         # Observation and action sizes
-        ob_dim = self.env.observation_space.shape[0]
+        ob_dim = self.env.observation_space.shape if img else self.env.observation_space.shape[0]
         ac_dim = self.env.action_space.n if discrete else self.env.action_space.shape[0]
         self.params['agent_params']['ac_dim'] = ac_dim
         self.params['agent_params']['ob_dim'] = ob_dim
@@ -61,6 +74,10 @@ class RL_Trainer(object):
         # simulation timestep, will be used for video saving
         if 'model' in dir(self.env):
             self.fps = 1/self.env.model.opt.timestep
+        elif 'env_wrappers' in self.params:
+            self.fps = 30 # This is not actually used when using the Monitor wrapper
+        elif 'video.frames_per_second' in self.env.env.metadata.keys():
+            self.fps = self.env.env.metadata['video.frames_per_second']
         else:
             self.fps = self.env.env.metadata['render_fps']
 
@@ -71,14 +88,11 @@ class RL_Trainer(object):
         agent_class = self.params['agent_class']
         self.agent = agent_class(self.env, self.params['agent_params'])
 
-    def run_training_loop(self, n_iter, collect_policy, eval_policy,
-                        initial_expertdata=None, relabel_with_expert=False,
-                        start_relabel_with_expert=1, expert_policy=None):
+    def run_training_loop(self, n_iter, collect_policy, eval_policy):
         """
         :param n_iter:  number of (dagger) iterations
         :param collect_policy:
         :param eval_policy:
-        :param initial_expertdata:
         :param relabel_with_expert:  whether to perform dagger
         :param start_relabel_with_expert: iteration at which to start relabel with expert
         :param expert_policy:
@@ -105,8 +119,6 @@ class RL_Trainer(object):
 
             # collect trajectories, to be used for training
             training_returns = self.collect_training_trajectories(
-                itr,
-                initial_expertdata,
                 collect_policy,
                 self.params['batch_size']
             )  # HW1: implement this function below
@@ -114,14 +126,12 @@ class RL_Trainer(object):
             self.total_envsteps += envsteps_this_batch
 
             # relabel the collected obs with actions from a provided expert policy
-            if relabel_with_expert and itr>=start_relabel_with_expert:
-                paths = self.do_relabel_with_expert(expert_policy, paths)  # HW1: implement this function below
-
+                
             # add collected data to replay buffer
             self.agent.add_to_replay_buffer(paths)
 
             # train agent (using sampled data from replay buffer)
-            training_logs = self.train_agent()  # HW1: implement this function below
+            training_logs = self.train_agent()  
 
             # log/save
             if self.log_video or self.log_metrics:
@@ -140,14 +150,11 @@ class RL_Trainer(object):
 
     def collect_training_trajectories(
             self,
-            itr,
-            load_initial_expertdata,
             collect_policy,
             batch_size,
     ):
         """
         :param itr:
-        :param load_initial_expertdata:  path to expert data pkl file
         :param collect_policy:  the current policy using which we collect data
         :param batch_size:  the number of transitions we collect
         :return:
@@ -155,23 +162,6 @@ class RL_Trainer(object):
             envsteps_this_batch: the sum over the numbers of environment steps in paths
             train_video_paths: paths which also contain videos for visualization purposes
         """
-
-        # TODO: decide whether to load training data or use the current policy to collect more data
-        # HINT: depending on if it's the first iteration or not, decide whether to either
-                # (1) load the data. In this case you can directly return as follows
-                # ``` return loaded_paths, 0, None ```
-
-                # (2) collect `self.params['batch_size']` transitions
-
-        # TODO: collect `batch_size` samples to be used for training
-        # HINT1: use sample_trajectories from utils
-        # HINT2: you want each of these collected rollouts to be of length self.params['ep_len']
-        
-        if itr == 0:
-            loaded_paths = None
-            with open(load_initial_expertdata, 'rb') as f:
-                loaded_paths = pickle.load(f)
-            return loaded_paths, 0, None
         
         self.logger.text_logger.debug("Collecting data to be used for training...")
         
@@ -182,7 +172,6 @@ class RL_Trainer(object):
         train_video_paths = None
         if self.log_video:
             self.logger.text_logger.debug('Collecting train rollouts to be used for saving videos...')
-            ## TODO: look in utils and implement sample_n_trajectories
             train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
 
         return paths, envsteps_this_batch, train_video_paths
@@ -192,35 +181,20 @@ class RL_Trainer(object):
         self.logger.text_logger.debug('Training agent using sampled data from replay buffer...')
         all_logs = []
         for train_step in range(self.params['num_agent_train_steps_per_iter']):
-
-            # TODO: sample some data from the data buffer
-            # HINT1: use the agent's sample function
-            # HINT2: how much data = self.params['train_batch_size']
             bs = self.params['train_batch_size']
             ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch = self.agent.sample(bs)
-            
-            # TODO: use the sampled data to train an agent
-            # HINT: use the agent's train function
-            # HINT: keep the agent's training log for debugging
             train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
 
-    def do_relabel_with_expert(self, expert_policy, paths):
-        self.logger.text_logger.debug("Relabelling collected observations with labels from an expert policy...")
-        # TODO: relabel collected obsevations (from our policy) with labels from an expert policy
-        # HINT: query the policy (using the get_action function) with paths[i]["observation"]
-        # and replace paths[i]["action"] with these expert labels
-        for path in paths:
-            obs = path['observation']
-            action = expert_policy.get_action(obs)
-            path['action'] = action
-        return paths
-
     ####################################
     ####################################
 
-    def perform_logging(self, itr, paths, eval_policy, train_video_paths, training_logs):
+    def perform_logging(self, itr, paths, eval_policy, train_video_paths, all_logs):
+        
+        last_log = all_logs[-1]
+
+        #######################
 
         # collect eval trajectories, for logging
         self.logger.text_logger.debug("Collecting data for eval...")
@@ -243,7 +217,7 @@ class RL_Trainer(object):
             # returns, for logging
             train_returns = [path["reward"].sum() for path in paths]
             eval_returns = [eval_path["reward"].sum() for eval_path in eval_paths]
-
+            
             # episode lengths, for logging
             train_ep_lens = [len(path["reward"]) for path in paths]
             eval_ep_lens = [len(eval_path["reward"]) for eval_path in eval_paths]
@@ -264,14 +238,14 @@ class RL_Trainer(object):
 
             logs["Train_EnvstepsSoFar"] = self.total_envsteps
             logs["TimeSinceStart"] = time.time() - self.start_time
-            last_log = training_logs[-1]  # Only use the last log for now
+            
             logs.update(last_log)
 
 
             if itr == 0:
                 self.initial_return = np.mean(train_returns)
             logs["Initial_DataCollection_AverageReturn"] = self.initial_return
-            self.logger.text_logger.info("Initial_DataCollection_AverageReturn : {}".format(self.initial_return))
+            # self.logger.text_logger.info("Initial_DataCollection_AverageReturn : {}".format(self.initial_return))
 
             # perform the logging
             for key, value in logs.items():
@@ -279,3 +253,22 @@ class RL_Trainer(object):
                 self.logger.text_logger.info(f"{key} : {value}")
 
             self.logger.flush()
+        
+        
+    def run_and_visualize(self, timesteps, save_dir):
+        frames = []
+        reset_return = self.env.reset()
+        ob = reset_return[0]
+        for _ in range(timesteps):
+            render_return = self.env.render()
+            print(render_return)
+            frames.append(render_return)
+            time.sleep(0.1)
+            action = self.agent.actor.get_action(ob)
+            action = action.detach().cpu()
+            print(action)
+            ob, r, ter, trun, info = self.env.step(action)
+            if ter or trun:
+                print(f"simulation stops at timestep {_}/{timesteps}")
+                break
+        utils.display_frames_as_gif(frames, 30, save_dir)

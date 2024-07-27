@@ -45,7 +45,7 @@ class DQNAgent(object):
 
         # TODO store the latest observation ("frame") into the replay buffer
         # HINT: the replay buffer used here is `MemoryOptimizedReplayBuffer`
-            # in dqn_utils.py
+        # in dqn_utils.py
         self.replay_buffer_idx = TODO
 
         eps = self.exploration.value(self.t)

@@ -274,6 +274,7 @@ class LinearSchedule(object):
         fraction  = min(float(t) / self.schedule_timesteps, 1.0)
         return self.initial_p + fraction * (self.final_p - self.initial_p)
 
+'''
 def compute_exponential_averages(variables, decay):
     """Given a list of tensorflow scalar variables
     create ops corresponding to their exponential
@@ -325,6 +326,7 @@ def initialize_interdependent_variables(session, vars_list, feed_dict):
             raise Exception("Cycle in variable dependencies, or extenrnal precondition unsatisfied.")
         else:
             vars_left = new_vars_left
+'''
 
 def get_wrapper_by_name(env, classname):
     currentenv = env
@@ -339,8 +341,11 @@ def get_wrapper_by_name(env, classname):
 class MemoryOptimizedReplayBuffer(object):
     def __init__(self, size, frame_history_len, lander=False):
         """This is a memory efficient implementation of the replay buffer.
+        
+        The experience saved in the replay buffer are arranged as a list of frames that
+        are separated by self.done
 
-        The sepecific memory optimizations use here are:
+        The specific memory optimizations use here are:
             - only store each frame once rather than k times
               even if every observation normally consists of k last frames
             - store frames as np.uint8 (actually it is most time-performance
@@ -450,6 +455,7 @@ class MemoryOptimizedReplayBuffer(object):
         # if there weren't enough frames ever in the buffer for context
         if start_idx < 0 and self.num_in_buffer != self.size:
             start_idx = 0
+        # set start_idx as the successor of the nearest endpoint to end_idx 
         for idx in range(start_idx, end_idx - 1):
             if self.done[idx % self.size]:
                 start_idx = idx + 1
